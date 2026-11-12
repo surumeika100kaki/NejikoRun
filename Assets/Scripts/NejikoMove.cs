@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class NejikoMove : MonoBehaviour
@@ -8,8 +9,15 @@ public class NejikoMove : MonoBehaviour
 
     [SerializeField] private float moveSpeed = 1.0f;
     //ねじ子の移動は毎フレーム必ず行われます
+    [SerializeField] private float _junpPower = 2.0f;
+    [SerializeField] private PlayerInput _playerInput = null;
+    //左右移動量の値
+    [SerializeField] private int _axisMovePower = 1;
+    private bool _isMoveKyeInput = false;
     private void Update()
     {
+        #region 11/5
+        #region 1mをmoveSpeed秒で移動するための移動量を計算する
         //1mをmoveSpeed秒で移動するための移動量を計算する
         float movePower = Time.deltaTime * moveSpeed;
         //1秒間に60fps　-> 10fps
@@ -23,7 +31,7 @@ public class NejikoMove : MonoBehaviour
         //1秒間に60fps -> 1/60秒 / 10 = 1/600
         //1秒間に10fps -> 1/10秒 / 10 = 1/100
         //time.deltaTimeを使うとスペックに関係なく移動量を一定に出来る
-
+        #endregion
         //ねじ子の位置を移動させる
         transform.Translate(0, 0, movePower);
 
@@ -36,7 +44,31 @@ public class NejikoMove : MonoBehaviour
         {
             GetComponent<Animator>().SetBool("run",false);
         }
+        #endregion
+        #region 11/12
+        if(_playerInput.InputMove.x == 0)
+        {
+            _isMoveKyeInput = false;
+        }
+        if(_playerInput.InputMove.x > 0 && !_isMoveKyeInput && transform.position.x < 1.5f)//inputMove.xが正の値　=　右キーの入力
+        {
+            transform.Translate(_axisMovePower,0,0);
+            _isMoveKyeInput = true;
+            Debug.Log($"右に移動:{_isMoveKyeInput}");
+        }
+        else if(_playerInput.InputMove.x < 0 && !_isMoveKyeInput && transform.position.x > -1.5f)//inputMove.xが不の値　=　左キーの入力
+        {
+            transform.Translate(-1*_axisMovePower,0,0);
+            _isMoveKyeInput = true;
+            Debug.Log($"左に移動:{_isMoveKyeInput}");
+        }
 
-        moveSpeed += 0.01f;
+        if (_playerInput.IsJumpTrogger)
+        {
+            transform.Translate(0,_junpPower,0);
+            Debug.Log($"ジャンプ:{_junpPower}");
+        }
+
+        #endregion
     }
 }
