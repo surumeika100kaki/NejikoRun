@@ -1,4 +1,6 @@
 using System;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class NejikoMove : MonoBehaviour
@@ -10,10 +12,22 @@ public class NejikoMove : MonoBehaviour
     [SerializeField] private float moveSpeed = 1.0f;
     //ねじ子の移動は毎フレーム必ず行われます
     [SerializeField] private float _junpPower = 2.0f;
+    [SerializeField] private float _junpHeight = 2.5f;
+    [SerializeField] private float _fallSpeed = 10;
     [SerializeField] private PlayerInput _playerInput = null;
     //左右移動量の値
     [SerializeField] private int _axisMovePower = 1;
+    //ジャンプしているか
+    [SerializeField] private bool _isFlayFlag = false;
+    [SerializeField] private bool _isJunpFlag = false;
+    private float _Timer =0;
     private bool _isMoveKyeInput = false;
+    private float _initialHeight = 0;
+
+    public void State()
+    {
+        _initialHeight = transform.position.y;
+    }
     private void Update()
     {
         #region 11/5
@@ -62,13 +76,36 @@ public class NejikoMove : MonoBehaviour
             _isMoveKyeInput = true;
             Debug.Log($"左に移動:{_isMoveKyeInput}");
         }
-
-        if (_playerInput.IsJumpTrogger)
+        #endregion
+        //ジャンプ
+        if (_playerInput.IsJumpTrogger && !_isFlayFlag || _isJunpFlag)
         {
-            transform.Translate(0,_junpPower,0);
+            //transform.Translate(0,_junpPower,0);
+            if(transform.position.y <= _junpHeight)
+            {
+                transform.position += Vector3.up / _junpPower * _Timer;
+                _isJunpFlag = true;
+                _Timer += Time.deltaTime;
+                return;
+            }
+            _isJunpFlag = false;
             Debug.Log($"ジャンプ:{_junpPower}");
+            _isFlayFlag = true;
+            _Timer = 0;
+        }
+        else if(_isFlayFlag)
+        {
+            if(transform.position.y <= _initialHeight)
+            {
+                this.transform.position = new Vector3(transform.position.x, _initialHeight, transform.position.z);
+                _isFlayFlag = false;
+                return;
+            }
+            //transform.Translate(0,-Time.deltaTime * _gravity,0);
+            transform.position -= Vector3.up / _fallSpeed * _Timer;
+            _Timer += Time.deltaTime;
         }
 
-        #endregion
+
     }
 }
